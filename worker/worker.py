@@ -72,8 +72,13 @@ async def insertIgIntoDB(urls):
 
     await conn.close()
 
-if __name__ == "__main__":
+async def main():
     load_dotenv()
     while true:
         igUrls = scrape_ig(amount = 100)
         await insertIgIntoDB(igUrls)
+        time.sleep(120)
+
+        
+if __name__ == "__main__":
+    asyncio.run(main())

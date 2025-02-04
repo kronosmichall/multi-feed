@@ -1,42 +1,54 @@
-version: '3.8'
 services:
-  db:
-    image: postgres:15
-    container_name: postgres_container 
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: michal
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: multifeed 
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - my_network
-
-  server:
-    build: back/
-    container_name: flask_container
+  web:
+    build: 
+      context: ./back
+      dockerfile: Dockerfile 
     ports:
       - "5000:5000"
-    networks:
-      - my_network
+    depends_on:
+      - db
+    environment:
+      # FLASK_ENV: development
+      DB_HOST: localhost
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASS: postgres
+    volumes:
+      - ./back:/back
+
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: multi-feed 
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
 
   worker:
-    build: worker/
-    container_name: worker_container
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
     depends_on:
-    networks:
-      - my_network
-
-  redis:
-    image: redis:alpine
-    container_name: my_redis
+      - db
+    environment:
+      DB_HOST: localhost
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASS: postgres
+    volumes:
+      - ./back:/back
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=root
     ports:
-      - "6379:6379"
-networks:
-  my_network:
-    driver: bridge
-
+      - "8080:80"
 volumes:
   pgdata:

@@ -1,13 +1,17 @@
-# Use the official PostgreSQL image as the base
-FROM postgres:latest
+FROM python:3.12
 
-# Set environment variables (optional for custom username, password, and database)
-ENV POSTGRES_USER=michal
-ENV POSTGRES_PASSWORD=pass
-ENV POSTGRES_DB=multifeed
+WORKDIR /worker
 
-# Add any custom initialization scripts (optional)
-# COPY ./init-scripts/ /docker-entrypoint-initdb.d/
+COPY worker.py /worker
+COPY chromedriver.exe /worker
+COPY requirements.txt /worker
 
-# Expose PostgreSQL port
-EXPOSE 5432
+RUN ["pip", "install" ,"--no-cache-dir", "-r", "requirements.txt"] 
+
+ENV POSTGRES_USER=root
+ENV POSTGRES_PASSWORD=root
+ENV POSTGRES_DB=multi-feed
+ENV IGLOGIN=ZIOMAL123123
+ENV IGPASS=ZIOMAL123123pass
+
+CMD ["python3", "worker.py"]
