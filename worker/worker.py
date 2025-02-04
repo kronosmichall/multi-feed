@@ -6,6 +6,8 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
+# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+import chromedriver_autoinstaller
 import random
 import time
 from dotenv import load_dotenv
@@ -14,12 +16,21 @@ import psycopg2
 import asyncio
 
 # Chrome options
-chrome_options = ChromeOptions()
-chrome_options.add_argument("--disable-infobars")
-
+options = ChromeOptions()
+options.add_argument("--disable-infobars")
+options.add_argument("--no-sandbox")
+# options.add_argument("--headless")
+options.add_argument("--disable-gpu")
+# options.user_data_dir = "/bot/google-chrome"
 # WebDriver service
-service = ChromeService('chromedriver.exe')
-driver = webdriver.Chrome(options=chrome_options)
+# TODO: create 3 instances for faster exec?
+driver = webdriver.Remote(
+  command_executor="http://selenium-hub:4444/wd/hub",
+  options = options
+  # desired_capabilities={
+  #   "browserName": "chrome",
+  # }
+)
 
 def scrape_ig(amount):
     login = getenv("IGLOGIN")
@@ -74,7 +85,7 @@ async def insertIgIntoDB(urls):
 
 async def main():
     load_dotenv()
-    while true:
+    while True:
         igUrls = scrape_ig(amount = 100)
         await insertIgIntoDB(igUrls)
         time.sleep(120)
